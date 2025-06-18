@@ -10,15 +10,16 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Chosen Palette: Calm Neutrals -->
-    <!-- Application Structure Plan: A thematic, single-page dashboard structure is used instead of a linear report format. A sticky top navigation allows users to jump to key sections: Overview, Market Cycles, Seasonality Patterns, Spot vs. Derivatives, and External Factors. This non-linear approach enhances usability by allowing users to explore topics based on their interest (e.g., a short-term trader might go directly to 'Seasonality', a long-term investor to 'Market Cycles'). Interactivity is centered on clickable cards, toggles for charts, and accordions to reveal detailed information, making complex data digestible and preventing cognitive overload. -->
+    <!-- Application Structure Plan: A thematic, single-page dashboard structure is used instead of a linear report format. A sticky top navigation allows users to jump to key sections: Overview, Market Cycles, Seasonality Patterns, Spot vs. Derivatives, External Factors, and Data Sources. This non-linear approach enhances usability by allowing users to explore topics based on their interest (e.g., a short-term trader might go directly to 'Seasonality', a long-term investor to 'Market Cycles'). Interactivity is centered on clickable cards, toggles for charts, and accordions to reveal detailed information, making complex data digestible and preventing cognitive overload. -->
     <!-- Visualization & Content Choices: 
         - Market Cycles: Goal: Organize. Method: Interactive HTML/CSS cards with JS click events to reveal details for each of the 4 phases. Justification: More engaging and space-efficient than a static table.
         - Weekly Seasonality: Goal: Compare. Method: Chart.js Bar Chart. Interaction: JS toggle to switch between 'Volume' and 'Volatility' datasets. Justification: Allows direct comparison of daily patterns for two related metrics.
         - Monthly Seasonality: Goal: Change. Method: Chart.js Bar Chart (for performance) and new Bar Chart for Volume Change. Justification: Clearly visualizes the positive/negative performance trend across months and volume shifts.
         - Spot vs. Derivatives: Goal: Inform/Compare. Method: Chart.js Doughnut Chart. Interaction: Hover updates a text block with details. Justification: A quick, visual representation of market share dominance.
         - External Factors: Goal: Organize. Method: HTML/JS accordion. Justification: Keeps the UI clean by hiding dense text until requested.
-        - New Monthly Volume Dynamics: Goal: Change. Method: Chart.js Bar Chart. Justification: Visualizes monthly volume percentage changes to identify periods of growth/decline.
-        - New Annual Volume Dynamics: Goal: Change. Method: Chart.js Bar Chart. Justification: Visualizes year-over-year volume percentage changes for long-term trends. -->
+        - Monthly Volume Dynamics: Goal: Change. Method: Chart.js Bar Chart. Justification: Visualizes monthly volume percentage changes to identify periods of growth/decline.
+        - Annual Volume Dynamics: Goal: Change. Method: Chart.js Bar Chart. Justification: Visualizes year-over-year volume percentage changes for long-term trends.
+        - Data Sources: Goal: Inform. Method: Simple HTML list. Justification: Provides clear attribution for the data. -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
         body {
@@ -75,6 +76,7 @@
                     <a href="#seasonality" class="nav-link text-slate-600 border-b-2 border-transparent pb-1">Stagionalità</a>
                     <a href="#spot-vs-derivatives" class="nav-link text-slate-600 border-b-2 border-transparent pb-1">Spot vs Derivati</a>
                     <a href="#factors" class="nav-link text-slate-600 border-b-2 border-transparent pb-1">Fattori Esterni</a>
+                    <a href="#data-sources" class="nav-link text-slate-600 border-b-2 border-transparent pb-1">Fonti Dati</a>
                 </div>
                 <div class="md:hidden">
                     <select id="mobile-nav" class="bg-white border border-slate-300 rounded-md py-2 px-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500">
@@ -83,6 +85,7 @@
                         <option value="#seasonality">Stagionalità</option>
                         <option value="#spot-vs-derivatives">Spot vs Derivati</option>
                         <option value="#factors">Fattori Esterni</option>
+                        <option value="#data-sources">Fonti Dati</option>
                     </select>
                 </div>
             </div>
@@ -210,7 +213,7 @@
             </div>
         </section>
         
-        <section id="factors" class="scroll-mt-20">
+        <section id="factors" class="mb-16 md:mb-24 scroll-mt-20">
             <div class="text-center mb-12">
                 <h2 class="text-3xl md:text-4xl font-bold text-slate-800">Fattori Esterni e Catalizzatori di Volume</h2>
                 <p class="max-w-2xl mx-auto mt-4 text-slate-600">
@@ -251,6 +254,25 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </section>
+
+        <section id="data-sources" class="mb-16 md:mb-24 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-800">Fonti dei Dati</h2>
+                <p class="max-w-2xl mx-auto mt-4 text-slate-600">
+                    I dati presentati in questo report interattivo sono stati sintetizzati e illustrativi per scopi didattici. Per un'analisi approfondita, si consiglia di consultare le seguenti fonti di dati autorevoli nel settore delle criptovalute.
+                </p>
+            </div>
+            <div class="bg-white p-8 rounded-xl shadow-lg border border-slate-200 max-w-4xl mx-auto">
+                <ul class="list-disc pl-5 text-slate-700 space-y-3">
+                    <li><strong class="text-teal-700">CoinMarketCap / CoinGecko:</strong> Per dati sui prezzi, volumi di scambio (spot e derivati), capitalizzazione di mercato e informazioni su migliaia di criptovalute da vari exchange.</li>
+                    <li><strong class="text-teal-700">Messari / The Block Crypto:</strong> Per report di ricerca approfonditi, analisi on-chain, dati fondamentali e notizie di mercato.</li>
+                    <li><strong class="text-teal-700">Glassnode / CryptoQuant:</strong> Per dati on-chain di Bitcoin ed Ethereum, che offrono insight sul comportamento di miner, balene, detentori a lungo termine e flussi di scambio.</li>
+                    <li><strong class="text-teal-700">TradingView / Bloomberg Terminal:</strong> Per strumenti di analisi tecnica e dati storici avanzati su vari asset crypto.</li>
+                    <li><strong class="text-teal-700">Report delle Grandi Borse (es. Binance, Coinbase, Kraken):</strong> Spesso pubblicano analisi sui loro volumi e sulle tendenze di trading.</li>
+                    <li><strong class="text-teal-700">Banche Centrali / Istituzioni Finanziarie:</strong> Per dati macroeconomici globali che possono influenzare il sentiment del mercato crypto.</li>
+                </ul>
             </div>
         </section>
 
