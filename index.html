@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="it" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Interattivo: Stagionalità dei Volumi nei Mercati Crypto</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Neutrals -->
+    <!-- Application Structure Plan: A thematic, single-page dashboard structure is used instead of a linear report format. A sticky top navigation allows users to jump to key sections: Overview, Market Cycles, Seasonality Patterns, Spot vs. Derivatives, and External Factors. This non-linear approach enhances usability by allowing users to explore topics based on their interest (e.g., a short-term trader might go directly to 'Seasonality', a long-term investor to 'Market Cycles'). Interactivity is centered on clickable cards, toggles for charts, and accordions to reveal detailed information, making complex data digestible and preventing cognitive overload. -->
+    <!-- Visualization & Content Choices: 
+        - Market Cycles: Goal: Organize. Method: Interactive HTML/CSS cards with JS click events to reveal details for each of the 4 phases. Justification: More engaging and space-efficient than a static table.
+        - Weekly Seasonality: Goal: Compare. Method: Chart.js Bar Chart. Interaction: JS toggle to switch between 'Volume' and 'Volatility' datasets. Justification: Allows direct comparison of daily patterns for two related metrics.
+        - Monthly Seasonality: Goal: Change. Method: Chart.js Bar Chart. Justification: Clearly visualizes the positive/negative performance trend across months.
+        - Spot vs. Derivatives: Goal: Inform/Compare. Method: Chart.js Doughnut Chart. Interaction: Hover updates a text block with details. Justification: A quick, visual representation of market share dominance.
+        - External Factors: Goal: Organize. Method: HTML/JS accordion. Justification: Keeps the UI clean by hiding dense text until requested. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 450px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+        }
+        .active-link, .nav-link:hover {
+            color: #0d9488; 
+            border-bottom-color: #0d9488;
+        }
+        .cycle-card {
+            transition: all 0.3s ease-in-out;
+            cursor: pointer;
+        }
+        .cycle-card.active {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            border-color: #0d9488;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <div class="text-xl font-bold text-teal-700">Crypto Volume Analysis</div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#overview" class="nav-link text-slate-600 border-b-2 border-transparent pb-1">Panoramica</a>
+                    <a href="#cycles" class="nav-link text-slate-600 border-b-2 border-transparent pb-1">Cicli di Mercato</a>
+                    <a href="#seasonality" class="nav-link text-slate-600 border-b-2 border-transparent pb-1">Stagionalità</a>
+                    <a href="#spot-vs-derivatives" class="nav-link text-slate-600 border-b-2 border-transparent pb-1">Spot vs Derivati</a>
+                    <a href="#factors" class="nav-link text-slate-600 border-b-2 border-transparent pb-1">Fattori Esterni</a>
+                </div>
+                <div class="md:hidden">
+                    <select id="mobile-nav" class="bg-white border border-slate-300 rounded-md py-2 px-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                        <option value="#overview">Panoramica</option>
+                        <option value="#cycles">Cicli di Mercato</option>
+                        <option value="#seasonality">Stagionalità</option>
+                        <option value="#spot-vs-derivatives">Spot vs Derivati</option>
+                        <option value="#factors">Fattori Esterni</option>
+                    </select>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 py-8 md:py-12">
+
+        <section id="overview" class="text-center mb-16 md:mb-24 scroll-mt-20">
+            <h1 class="text-4xl md:text-5xl font-bold text-teal-800 mb-4">La Stagionalità dei Volumi nel Mercato Crypto</h1>
+            <p class="max-w-3xl mx-auto text-lg text-slate-600 mb-8">
+                Un'esplorazione interattiva dei pattern ricorrenti e delle dinamiche di volume che caratterizzano i mercati delle criptovalute. Scopri come i cicli, le stagioni e i fattori esterni influenzano l'attività di trading.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200">
+                    <h3 class="font-bold text-2xl text-teal-700 mb-2">>70%</h3>
+                    <p class="text-slate-600">del volume totale di trading è dominato dai derivati, amplificando le tendenze stagionali.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200">
+                    <h3 class="font-bold text-2xl text-teal-700">"Effetto Weekend"</h3>
+                    <p class="text-slate-600">I fine settimana mostrano volumi più bassi e volatilità più alta, specialmente la domenica.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200">
+                    <h3 class="font-bold text-2xl text-teal-700">Cicli di 4 Anni</h3>
+                    <p class="text-slate-600">L'halving di Bitcoin agisce come un catalizzatore per cicli di mercato a lungo termine e rotazioni di volume.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="cycles" class="mb-16 md:mb-24 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-800">Le Quattro Stagioni del Mercato Crypto</h2>
+                <p class="max-w-2xl mx-auto mt-4 text-slate-600">
+                    Il mercato delle criptovalute si muove in cicli distinti, ognuno con un proprio sentiment e profilo di volume. Clicca su una fase per esplorarne le caratteristiche e capire come la "smart money" si posiziona in ogni stagione.
+                </p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div id="cycle-accumulo" class="cycle-card bg-white p-6 rounded-xl shadow-md border-2 border-transparent">
+                    <h3 class="text-xl font-bold text-green-700 mb-2">🌱 Accumulo (Primavera)</h3>
+                    <p class="text-sm text-slate-500">Fase di fondo mercato. Volumi bassi, prezzi stabili, sentiment di incertezza.</p>
+                </div>
+                <div id="cycle-crescita" class="cycle-card bg-white p-6 rounded-xl shadow-md border-2 border-transparent">
+                    <h3 class="text-xl font-bold text-yellow-600 mb-2">☀️ Crescita (Estate)</h3>
+                    <p class="text-sm text-slate-500">Inizio del bull market. Volumi in aumento, ottimismo crescente.</p>
+                </div>
+                <div id="cycle-distribuzione" class="cycle-card bg-white p-6 rounded-xl shadow-md border-2 border-transparent">
+                    <h3 class="text-xl font-bold text-orange-600 mb-2">🍂 Distribuzione (Autunno)</h3>
+                    <p class="text-sm text-slate-500">Picco del mercato. Volumi euforici, avidità diffusa, vendite dalla smart money.</p>
+                </div>
+                <div id="cycle-raffreddamento" class="cycle-card bg-white p-6 rounded-xl shadow-md border-2 border-transparent">
+                    <h3 class="text-xl font-bold text-blue-700 mb-2">❄️ Raffreddamento (Inverno)</h3>
+                    <p class="text-sm text-slate-500">Bear market. Volumi in calo, prezzi in discesa, panico.</p>
+                </div>
+            </div>
+            <div id="cycle-details" class="bg-white p-8 rounded-xl shadow-lg border border-slate-200 min-h-[180px]">
+            </div>
+        </section>
+
+        <section id="seasonality" class="mb-16 md:mb-24 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-800">Pattern di Stagionalità</h2>
+                <p class="max-w-2xl mx-auto mt-4 text-slate-600">
+                    I volumi non seguono solo cicli pluriennali, ma anche schemi settimanali e mensili. Questa sezione visualizza queste tendenze per aiutarti a identificare i periodi di maggiore o minore attività.
+                </p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-200">
+                    <h3 class="text-xl font-bold text-center mb-1">Dinamiche Settimanali</h3>
+                    <p class="text-center text-sm text-slate-500 mb-4">Confronta volume e volatilità durante la settimana.</p>
+                    <div class="flex justify-center mb-4">
+                        <div class="inline-flex rounded-md shadow-sm">
+                            <button id="view-volume" class="px-4 py-2 text-sm font-medium bg-teal-600 text-white border border-teal-600 rounded-l-lg hover:bg-teal-700 focus:z-10 focus:ring-2 focus:ring-teal-500">Volume</button>
+                            <button id="view-volatility" class="px-4 py-2 text-sm font-medium bg-white text-teal-600 border-t border-b border-r border-teal-600 rounded-r-lg hover:bg-slate-100 focus:z-10 focus:ring-2 focus:ring-teal-500">Volatilità</button>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="weeklyChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-200">
+                    <h3 class="text-xl font-bold text-center mb-1">Performance Mensile di Bitcoin</h3>
+                    <p class="text-center text-sm text-slate-500 mb-4">Rendimento medio storico per mese, evidenziando i periodi più forti e più deboli.</p>
+                    <div class="chart-container" style="max-height: 480px;">
+                        <canvas id="monthlyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="spot-vs-derivatives" class="mb-16 md:mb-24 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-800">Spot vs. Derivati: Due Facce del Mercato</h2>
+                 <p class="max-w-2xl mx-auto mt-4 text-slate-600">
+                    Il mercato crypto è diviso in due segmenti principali: spot (acquisto diretto) e derivati (contratti finanziari). Sebbene interconnessi, hanno dinamiche di volume molto diverse. Esplora il grafico per capire la loro influenza.
+                </p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-200">
+                    <h3 class="text-xl font-bold text-center mb-4">Dominanza del Volume di Mercato</h3>
+                    <div class="chart-container mx-auto" style="height: 300px; max-width: 300px;">
+                        <canvas id="derivativesChart"></canvas>
+                    </div>
+                </div>
+                <div id="derivatives-details" class="bg-white p-8 rounded-xl shadow-lg border border-slate-200 min-h-[300px]">
+                    <h3 class="text-2xl font-bold text-teal-700 mb-4">Passa il mouse sul grafico</h3>
+                    <p class="text-slate-600">Posiziona il cursore su una sezione del grafico a ciambella per scoprire le caratteristiche chiave, il profilo di rischio e il ruolo strategico di ogni segmento di mercato.</p>
+                </div>
+            </div>
+        </section>
+        
+        <section id="factors" class="scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-800">Fattori Esterni e Catalizzatori di Volume</h2>
+                <p class="max-w-2xl mx-auto mt-4 text-slate-600">
+                    Oltre ai cicli interni, i volumi crypto sono profondamente influenzati da eventi esterni. Questi fattori possono amplificare o sovrascrivere i pattern stagionali. Clicca su ciascun fattore per approfondire il suo impatto.
+                </p>
+            </div>
+            <div class="space-y-4 max-w-4xl mx-auto">
+                <div class="accordion-item bg-white rounded-xl shadow-md border border-slate-200">
+                    <button class="accordion-header w-full flex justify-between items-center p-5 text-left font-semibold text-lg text-slate-700">
+                        <span>📊 Eventi Macroeconomici e Geopolitici</span>
+                        <span class="accordion-icon transform transition-transform duration-300">▼</span>
+                    </button>
+                    <div class="accordion-content overflow-hidden max-h-0 transition-all duration-500 ease-in-out">
+                        <div class="p-5 pt-0 text-slate-600">
+                            <p>Indicatori come inflazione (IPC) e tassi di interesse hanno un impatto profondo. Tassi bassi favoriscono gli asset di rischio come le cripto, aumentando i volumi. L'alta inflazione può spingere gli investitori verso Bitcoin come riserva di valore. Eventi inattesi come pandemie o crisi geopolitiche ("cigni neri") possono causare picchi o crolli di volume improvvisi, alterando qualsiasi pattern stagionale atteso.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item bg-white rounded-xl shadow-md border border-slate-200">
+                    <button class="accordion-header w-full flex justify-between items-center p-5 text-left font-semibold text-lg text-slate-700">
+                        <span>⚖️ Sviluppi Normativi</span>
+                        <span class="accordion-icon transform transition-transform duration-300">▼</span>
+                    </button>
+                    <div class="accordion-content overflow-hidden max-h-0 transition-all duration-500 ease-in-out">
+                        <div class="p-5 pt-0 text-slate-600">
+                            <p>Le notizie sullo status giuridico delle cripto sono catalizzatori potenti. Regolamentazioni chiare e favorevoli (es. approvazione di ETF, MiCA in UE) riducono l'incertezza, attraggono capitale istituzionale e aumentano i volumi in modo sostenuto. Al contrario, divieti o notizie negative possono deprimere l'attività di trading. Il progresso normativo può cambiare radicalmente e in modo duraturo il panorama dei volumi.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item bg-white rounded-xl shadow-md border border-slate-200">
+                    <button class="accordion-header w-full flex justify-between items-center p-5 text-left font-semibold text-lg text-slate-700">
+                        <span>🎭 Sentimento di Mercato e Liquidità</span>
+                        <span class="accordion-icon transform transition-transform duration-300">▼</span>
+                    </button>
+                    <div class="accordion-content overflow-hidden max-h-0 transition-all duration-500 ease-in-out">
+                        <div class="p-5 pt-0 text-slate-600">
+                            <p>Le emozioni umane come la "paura di perdere" (FOMO) e il panico amplificano i movimenti di volume. L'ingresso di investitori istituzionali aumenta la liquidità e la stabilità, mentre la loro assenza (es. nei weekend) la riduce, portando a maggiore volatilità. Il volume è un'approssimazione diretta della liquidità: volumi alti significano che è facile scambiare senza impattare il prezzo; volumi bassi indicano un mercato più "sottile" e rischioso.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-800 text-white mt-16">
+        <div class="container mx-auto px-4 py-6 text-center text-slate-400">
+            <p>&copy; 2025 Report Interattivo sulla Stagionalità Crypto. Dati sintetizzati per scopi illustrativi.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            const cycleDetailsData = {
+                accumulo: {
+                    title: '🌱 Fase di Accumulo',
+                    color: 'text-green-700',
+                    content: `Dopo un lungo mercato ribassista, i prezzi si stabilizzano. Il volume è basso e l'interesse mediatico è scarso. Questo è il momento in cui gli investitori a lungo termine ("smart money") iniziano ad acquistare asset a prezzi bassi, anticipando una futura ripresa. Il sentiment dominante è l'incredulità.`
+                },
+                crescita: {
+                    title: '☀️ Fase di Crescita',
+                    color: 'text-yellow-600',
+                    content: `Il mercato inizia a riprendersi. I volumi di trading aumentano costantemente mentre nuovi investitori, attratti dalla speranza e dall'ottimismo, entrano nel mercato. I prezzi salgono in modo sostenuto e anche i cali temporanei vengono visti come opportunità di acquisto (buy the dip).`
+                },
+                distribuzione: {
+                    title: '🍂 Fase di Distribuzione',
+                    color: 'text-orange-600',
+                    content: `Il culmine del bull market. I volumi raggiungono picchi estremi e il mercato è pervaso da euforia e avidità. Gli investitori retail entrano in massa spinti dalla FOMO, mentre la smart money, che aveva accumulato in precedenza, vende le proprie posizioni per realizzare profitti.`
+                },
+                raffreddamento: {
+                    title: '❄️ Fase di Raffreddamento',
+                    color: 'text-blue-700',
+                    content: `Il mercato entra in una fase ribassista (bear market). I prezzi crollano e i volumi diminuiscono drasticamente manché l'interesse si affievolisce. Molti investitori, presi dal panico, vendono in perdita, amplificando la discesa fino a quando il mercato non trova un nuovo fondo.`
+                }
+            };
+
+            const cycleCards = document.querySelectorAll('.cycle-card');
+            const cycleDetailsContainer = document.getElementById('cycle-details');
+            let activeCard = null;
+
+            function updateCycleDetails(type) {
+                const data = cycleDetailsData[type];
+                cycleDetailsContainer.innerHTML = `
+                    <div class="fade-in">
+                        <h3 class="text-2xl font-bold ${data.color} mb-4">${data.title}</h3>
+                        <p class="text-slate-600">${data.content}</p>
+                    </div>
+                `;
+            }
+
+            cycleCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    if (activeCard) {
+                        activeCard.classList.remove('active');
+                    }
+                    card.classList.add('active');
+                    activeCard = card;
+                    const cycleType = card.id.split('-')[1];
+                    updateCycleDetails(cycleType);
+                });
+            });
+            
+            document.getElementById('cycle-accumulo').click();
+
+            const derivativesDetailsData = {
+                spot: {
+                    title: "Trading Spot",
+                    content: "Implica l'acquisto e la vendita diretti dell'asset crypto con possesso reale. Il rischio è limitato al capitale investito, senza leva finanziaria. È ideale per strategie a lungo termine ('hodling') e rappresenta la base del mercato."
+                },
+                derivatives: {
+                    title: "Trading di Derivati",
+                    content: "Coinvolge contratti finanziari (futures, opzioni) il cui valore deriva dal prezzo di una criptovaluta, senza possederla. Permette l'uso della leva, che amplifica guadagni e perdite. Domina i volumi ed è usato per speculazione e copertura del rischio."
+                }
+            };
+            const derivativesDetailsContainer = document.getElementById('derivatives-details');
+            
+            function updateDerivativesDetails(type) {
+                 const data = derivativesDetailsData[type];
+                 derivativesDetailsContainer.innerHTML = `
+                    <div class="fade-in">
+                        <h3 class="text-2xl font-bold text-teal-700 mb-4">${data.title}</h3>
+                        <p class="text-slate-600">${data.content}</p>
+                    </div>
+                `;
+            }
+
+
+            const derivativesCtx = document.getElementById('derivativesChart').getContext('2d');
+            new Chart(derivativesCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Derivati', 'Spot'],
+                    datasets: [{
+                        data: [73, 27],
+                        backgroundColor: ['#0d9488', '#99f6e4'],
+                        borderColor: ['#ffffff', '#ffffff'],
+                        borderWidth: 4,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                font: { size: 14 }
+                            }
+                        },
+                        tooltip: {
+                           enabled: true
+                        },
+                        hover: {
+                            onHover: (event, chartElement) => {
+                                event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
+                                if(chartElement.length > 0) {
+                                   const index = chartElement[0].index;
+                                   if(index === 0) updateDerivativesDetails('derivatives');
+                                   else if (index === 1) updateDerivativesDetails('spot');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
+            const weeklyData = {
+                labels: ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica'],
+                datasets: {
+                    volume: {
+                        label: 'Tendenza Volume',
+                        data: [85, 95, 100, 95, 80, 50, 45],
+                        backgroundColor: 'rgba(13, 148, 136, 0.6)',
+                        borderColor: 'rgba(13, 148, 136, 1)',
+                        borderWidth: 1
+                    },
+                    volatility: {
+                        label: 'Tendenza Volatilità',
+                        data: [80, 70, 65, 70, 75, 90, 100],
+                        backgroundColor: 'rgba(203, 213, 225, 0.6)',
+                        borderColor: 'rgba(100, 116, 139, 1)',
+                        borderWidth: 1
+                    }
+                }
+            };
+            const weeklyChart = new Chart(weeklyCtx, {
+                type: 'bar',
+                data: {
+                    labels: weeklyData.labels,
+                    datasets: [weeklyData.datasets.volume]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { display: false },
+                            grid: { drawOnChartArea: false, drawTicks: false }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            document.getElementById('view-volume').addEventListener('click', function() {
+                weeklyChart.data.datasets = [weeklyData.datasets.volume];
+                weeklyChart.update();
+                this.classList.add('bg-teal-600', 'text-white');
+                document.getElementById('view-volatility').classList.remove('bg-teal-600', 'text-white');
+            });
+
+            document.getElementById('view-volatility').addEventListener('click', function() {
+                weeklyChart.data.datasets = [weeklyData.datasets.volatility];
+                weeklyChart.update();
+                this.classList.add('bg-teal-600', 'text-white');
+                document.getElementById('view-volume').classList.remove('bg-teal-600', 'text-white');
+            });
+            
+            const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+            const monthlyReturns = [10, 29.2, -5, 32.8, 34.3, -8, -6, -7, -10, 15, 39.1, 5];
+            new Chart(monthlyCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'],
+                    datasets: [{
+                        label: 'Rendimento Medio Storico BTC (%)',
+                        data: monthlyReturns,
+                        backgroundColor: monthlyReturns.map(v => v > 0 ? 'rgba(13, 148, 136, 0.6)' : 'rgba(220, 38, 38, 0.5)'),
+                        borderColor: monthlyReturns.map(v => v > 0 ? 'rgba(13, 148, 136, 1)' : 'rgba(220, 38, 38, 1)'),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    scales: {
+                         x: {
+                            grid: { borderColor: 'rgba(200,200,200,0.2)'},
+                            ticks: { callback: value => value + '%' }
+                         },
+                         y: {
+                            grid: { display: false }
+                         }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            const accordions = document.querySelectorAll('.accordion-item');
+            accordions.forEach(item => {
+                const header = item.querySelector('.accordion-header');
+                const content = item.querySelector('.accordion-content');
+                const icon = item.querySelector('.accordion-icon');
+                header.addEventListener('click', () => {
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                        icon.style.transform = 'rotate(0deg)';
+                    } else {
+                        accordions.forEach(otherItem => {
+                           otherItem.querySelector('.accordion-content').style.maxHeight = null;
+                           otherItem.querySelector('.accordion-icon').style.transform = 'rotate(0deg)';
+                        })
+                        content.style.maxHeight = content.scrollHeight + 'px';
+                        icon.style.transform = 'rotate(180deg)';
+                    }
+                });
+            });
+
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('section');
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 80) {
+                        current = section.getAttribute('id');
+                    }
+                });
+                navLinks.forEach(link => {
+                    link.classList.remove('active-link');
+                    if (link.getAttribute('href').includes(current)) {
+                        link.classList.add('active-link');
+                    }
+                });
+            });
+            
+            document.getElementById('mobile-nav').addEventListener('change', function(e) {
+                window.location.hash = e.target.value;
+            });
+        });
+    </script>
+
+</body>
+</html>
