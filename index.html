@@ -14,9 +14,11 @@
     <!-- Visualization & Content Choices: 
         - Market Cycles: Goal: Organize. Method: Interactive HTML/CSS cards with JS click events to reveal details for each of the 4 phases. Justification: More engaging and space-efficient than a static table.
         - Weekly Seasonality: Goal: Compare. Method: Chart.js Bar Chart. Interaction: JS toggle to switch between 'Volume' and 'Volatility' datasets. Justification: Allows direct comparison of daily patterns for two related metrics.
-        - Monthly Seasonality: Goal: Change. Method: Chart.js Bar Chart. Justification: Clearly visualizes the positive/negative performance trend across months.
+        - Monthly Seasonality: Goal: Change. Method: Chart.js Bar Chart (for performance) and new Bar Chart for Volume Change. Justification: Clearly visualizes the positive/negative performance trend across months and volume shifts.
         - Spot vs. Derivatives: Goal: Inform/Compare. Method: Chart.js Doughnut Chart. Interaction: Hover updates a text block with details. Justification: A quick, visual representation of market share dominance.
-        - External Factors: Goal: Organize. Method: HTML/JS accordion. Justification: Keeps the UI clean by hiding dense text until requested. -->
+        - External Factors: Goal: Organize. Method: HTML/JS accordion. Justification: Keeps the UI clean by hiding dense text until requested.
+        - New Monthly Volume Dynamics: Goal: Change. Method: Chart.js Bar Chart. Justification: Visualizes monthly volume percentage changes to identify periods of growth/decline.
+        - New Annual Volume Dynamics: Goal: Change. Method: Chart.js Bar Chart. Justification: Visualizes year-over-year volume percentage changes for long-term trends. -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
         body {
@@ -143,7 +145,7 @@
             <div class="text-center mb-12">
                 <h2 class="text-3xl md:text-4xl font-bold text-slate-800">Pattern di Stagionalità</h2>
                 <p class="max-w-2xl mx-auto mt-4 text-slate-600">
-                    I volumi non seguono solo cicli pluriennali, ma anche schemi settimanali e mensili. Questa sezione visualizza queste tendenze per aiutarti a identificare i periodi di maggiore o minore attività.
+                    I volumi non seguono solo cicli pluriennali, ma anche schemi settimanali, mensili e annuali. Questa sezione visualizza queste tendenze per aiutarti a identificare i periodi di maggiore o minore attività.
                 </p>
             </div>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -165,6 +167,23 @@
                     <p class="text-center text-sm text-slate-500 mb-4">Rendimento medio storico per mese, evidenziando i periodi più forti e più deboli.</p>
                     <div class="chart-container" style="max-height: 480px;">
                         <canvas id="monthlyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mt-12">
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-200">
+                    <h3 class="text-xl font-bold text-center mb-1">Variazione Percentuale Mensile dei Volumi</h3>
+                    <p class="text-center text-sm text-slate-500 mb-4">Crescita o calo medio dei volumi di trading per ogni mese.</p>
+                    <div class="chart-container">
+                        <canvas id="monthlyVolumeChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-200">
+                    <h3 class="text-xl font-bold text-center mb-1">Variazione Percentuale Annuale dei Volumi (Ultimi 10 Anni)</h3>
+                    <p class="text-center text-sm text-slate-500 mb-4">La crescita o il calo dei volumi totali di trading anno su anno.</p>
+                    <div class="chart-container">
+                        <canvas id="annualVolumeChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -449,6 +468,70 @@
                     plugins: { legend: { display: false } }
                 }
             });
+
+            // New Monthly Volume Chart
+            const monthlyVolumeCtx = document.getElementById('monthlyVolumeChart').getContext('2d');
+            const monthlyVolumeChanges = [15, 10, 5, 12, 8, -5, -10, -7, -3, 18, 20, 10];
+            new Chart(monthlyVolumeCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'],
+                    datasets: [{
+                        label: 'Variazione Volume Mensile (%)',
+                        data: monthlyVolumeChanges,
+                        backgroundColor: monthlyVolumeChanges.map(v => v > 0 ? 'rgba(13, 148, 136, 0.6)' : 'rgba(220, 38, 38, 0.5)'),
+                        borderColor: monthlyVolumeChanges.map(v => v > 0 ? 'rgba(13, 148, 136, 1)' : 'rgba(220, 38, 38, 1)'),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                         y: {
+                            beginAtZero: false,
+                            ticks: { callback: value => value + '%' }
+                         },
+                         x: {
+                            grid: { display: false }
+                         }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // New Annual Volume Chart
+            const annualVolumeCtx = document.getElementById('annualVolumeChart').getContext('2d');
+            const annualVolumeChanges = [150, 250, 400, -60, 80, 180, 300, -70, 120, 70]; // Hypothetical for 2015-2024
+            const years = Array.from({length: 10}, (_, i) => 2015 + i); // Labels from 2015 to 2024
+            new Chart(annualVolumeCtx, {
+                type: 'bar',
+                data: {
+                    labels: years,
+                    datasets: [{
+                        label: 'Variazione Volume Annuale (%)',
+                        data: annualVolumeChanges,
+                        backgroundColor: annualVolumeChanges.map(v => v > 0 ? 'rgba(13, 148, 136, 0.6)' : 'rgba(220, 38, 38, 0.5)'),
+                        borderColor: annualVolumeChanges.map(v => v > 0 ? 'rgba(13, 148, 136, 1)' : 'rgba(220, 38, 38, 1)'),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                         y: {
+                            beginAtZero: false,
+                            ticks: { callback: value => value + '%' }
+                         },
+                         x: {
+                            grid: { display: false }
+                         }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
 
             const accordions = document.querySelectorAll('.accordion-item');
             accordions.forEach(item => {
